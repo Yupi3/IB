@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct SecureData {
+    int secret;
+    char password[8];
+};
+
+struct UserBuffer {
+    char buffer[12];
+};
+
+void leak_data() {
+    printf("Security breach! Secret data accessed!\n");
+}
+
+int main() {
+    // Выделяем память под структуру UserBuffer
+    struct UserBuffer* userBuf = malloc(sizeof(struct UserBuffer));
+    strcpy(userBuf->buffer, "ATTACKER01");
+
+    // Небезопасное приведение указателя
+    struct SecureData* secData = (struct SecureData*)userBuf;
+
+    // Непреднамеренный доступ к полю secret
+    printf("Secret: %d\n", secData->secret); // Чтение чужой памяти
+    // Попытка изменения password вызовет переполнение буфера
+    strcpy(secData->password, "s3cr3t"); // Запись за пределами выделенной памяти
+
+    free(userBuf);
+    return 0;
+}
